@@ -45,28 +45,36 @@ public class MainActivity extends AppCompatActivity {
     // Key for current color
     private final String COLOR_KEY = "color";
 
+    private SharedPreferences mPreferences;
+    private String sharedPrefFile =
+            "com.example.android.hellosharedprefs";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize views, color
-        mShowCountTextView = findViewById(R.id.count_textview);
-        mColor = ContextCompat.getColor(this,
-                R.color.default_background);
+        // Initialize views, color, preferences
+        mShowCountTextView = (TextView) findViewById(R.id.count_textview);
+        mColor = ContextCompat.getColor(this, R.color.default_background);
+        mPreferences = getSharedPreferences(
+                mSharedPrefFile, MODE_PRIVATE);
 
-        // Restore the saved instance state.
-        if (savedInstanceState != null) {
+        // Restore preferences
+        mCount = mPreferences.getInt(COUNT_KEY, 0);
+        mShowCountTextView.setText(String.format("%s", mCount));
+        mColor = mPreferences.getInt(COLOR_KEY, mColor);
+        mShowCountTextView.setBackgroundColor(mColor);
+    }
 
-            mCount = savedInstanceState.getInt(COUNT_KEY);
-            if (mCount != 0) {
-                mShowCountTextView.setText(String.format("%s", mCount));
-            }
-
-            mColor = savedInstanceState.getInt(COLOR_KEY);
-            mShowCountTextView.setBackgroundColor(mColor);
-        }
+    protected void onPause(){
+        super.onPause();
+        SharedPreferences.Editor preferencesEditor = mPreferences.edit();
+        preferencesEditor.putInt(COUNT_KEY, mCount);
+        preferencesEditor.putInt(COLOR_KEY, mColor);
+        preferencesEditor.apply();
+        // ...
     }
 
     /**
@@ -121,8 +129,13 @@ public class MainActivity extends AppCompatActivity {
         mShowCountTextView.setText(String.format("%s", mCount));
 
         // Reset color
-        mColor = ContextCompat.getColor(this,
-                R.color.default_background);
+        mColor = ContextCompat.getColor(this, R.color.default_background);
         mShowCountTextView.setBackgroundColor(mColor);
+
+        // Clear preferences
+        SharedPreferences.Editor preferencesEditor = mPreferences.edit();
+        preferencesEditor.clear();
+        preferencesEditor.apply();
+
     }
 }
